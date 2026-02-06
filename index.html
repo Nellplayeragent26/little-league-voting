@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>NELL 12u All-Star Voting</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            padding-bottom: max(5px, env(safe-area-inset-bottom));
+        }
+
+        .container {
+            width: 100%;
+            height: 100%;
+            max-width: 1400px;
+            max-height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .welcome-screen h1 {
+            font-size: 48px;
+            color: #1e40af;
+            margin-bottom: 20px;
+        }
+
+        .welcome-screen p {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .welcome-screen select {
+            width: 100%;
+            padding: 20px;
+            font-size: 28px;
+            border: 4px solid #1e40af;
+            border-radius: 15px;
+            text-align: center;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            margin-bottom: 25px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .welcome-screen select:focus {
+            outline: none;
+            border-color: #7c3aed;
+        }
+
+        .welcome-screen input {
+            width: 100%;
+            padding: 20px;
+            font-size: 32px;
+            border: 4px solid #1e40af;
+            border-radius: 15px;
+            text-align: center;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            margin-bottom: 25px;
+        }
+
+        .welcome-screen input:focus {
+            outline: none;
+            border-color: #7c3aed;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 25px 60px;
+            font-size: 36px;
+            font-weight: 800;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.5);
+        }
+
+        .start-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Voting Screen */
+        .voting-screen {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+        }
+
+        /* Top Bar - Fixed */
+        .top-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 8px 15px;
+            margin-bottom: 0;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            min-height: 0;
+        }
+
+        .voter-name {
+            font-size: 20px;
+            color: #1e40af;
+            font-weight: 700;
+        }
+
+        .vote-counter {
+            background: linear-gradient(135deg, #f59e0b 0%, #dc2626 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 8px 20px;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .vote-counter-number {
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .vote-counter-label {
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* Players Grid - Scrollable */
+        .players-container {
+            background: white;
+            border-radius: 12px;
+            padding: 10px;
+            flex: 1;
+            overflow-y: auto;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            margin-bottom: 0;
+            min-height: 0;
+        }
+
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+        }
+
+        .player-card {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border: 3px solid transparent;
+            border-radius: 10px;
+            padding: 6px 4px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
+        }
+
+        .player-card:active {
+            transform: scale(0.95);
+        }
+
+        .player-card.selected {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-color: #059669;
+            transform: scale(1.03);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
+        }
+
+        .player-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.1;
+        }
+
+        .player-card.selected .player-name {
+            color: white;
+        }
+
+        .player-team {
+            font-size: 10px;
+            color: #64748b;
+            margin-top: 2px;
+            font-weight: 600;
+        }
+
+        .player-card.selected .player-team {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .checkmark {
+            font-size: 22px;
+            margin-top: 2px;
+            display: none;
+        }
+
+        .player-card.selected .checkmark {
+            display: block;
+        }
+
+        /* Bottom Bar - Fixed */
+        .bottom-bar {
+            background: white;
+            border-radius: 12px;
+            padding: 8px 15px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            gap: 10px;
+            min-height: 0;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            font-size: 22px;
+            font-weight: 800;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+            flex-shrink: 0;
+        }
+
+        .submit-btn:disabled {
+            background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+            cursor: not-allowed;
+        }
+
+        .submit-message {
+            font-size: 14px;
+            color: #666;
+            font-weight: 700;
+            text-align: center;
+            flex: 1;
+        }
+
+        .submit-message.ready {
+            color: #10b981;
+        }
+
+        /* Admin Link */
+        .admin-link {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.3);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .admin-link:hover {
+            background: rgba(255,255,255,0.5);
+        }
+
+        /* Thank You Screen */
+        .thankyou-screen {
+            display: none;
+            background: white;
+            border-radius: 30px;
+            padding: 60px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            max-width: 700px;
+            margin: auto;
+        }
+
+        .thankyou-screen h1 {
+            font-size: 64px;
+            color: #10b981;
+            margin-bottom: 30px;
+        }
+
+        .thankyou-screen .checkmark-big {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            font-size: 90px;
+            color: white;
+            box-shadow: 0 20px 50px rgba(16, 185, 129, 0.5);
+        }
+
+        .thankyou-screen p {
+            font-size: 32px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .new-voter-btn {
+            background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            font-size: 28px;
+            font-weight: 800;
+            border-radius: 15px;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(30, 64, 175, 0.5);
+        }
+
+        /* Tablet adjustments */
+        @media (max-width: 1200px) {
+            .players-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .players-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .player-name {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .players-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .top-bar {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div class="welcome-screen" id="welcomeScreen">
+            <h1>⚾ All-Star Voting</h1>
+            <p>Pick <strong>13 players</strong> for the tournament team!</p>
+            
+            <select id="voterName">
+                <option value="">-- Select Your Name --</option>
+            </select>
+            
+            <button class="start-btn" id="startBtn" onclick="startVoting()" disabled>
+                START! 🎉
+            </button>
+        </div>
+
+        <!-- Voting Screen -->
+        <div class="voting-screen" id="votingScreen">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="voter-name" id="voterNameDisplay"></div>
+            </div>
+
+            <!-- Players Grid -->
+            <div class="players-container">
+                <div class="players-grid" id="playersGrid"></div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="bottom-bar">
+                <div class="vote-counter">
+                    <div class="vote-counter-number" id="voteCount">0/13</div>
+                    <div class="vote-counter-label">SELECTED</div>
+                </div>
+                
+                <div class="submit-message" id="submitMessage">
+                    Pick 13 players to continue
+                </div>
+                
+                <button class="submit-btn" id="submitBtn" onclick="submitVotes()" disabled>
+                    SUBMIT ✓
+                </button>
+            </div>
+        </div>
+
+        <!-- Thank You Screen -->
+        <div class="thankyou-screen" id="thankyouScreen">
+            <div class="checkmark-big">✓</div>
+            <h1>Thank You!</h1>
+            <p>Your votes are saved!<br>Thanks for voting! ⚾</p>
+            <button class="new-voter-btn" onclick="resetForNewVoter()">
+                NEXT VOTER
+            </button>
+        </div>
+    </div>
+
+    <a href="#" class="admin-link" onclick="viewResults(event)">👨‍💼 Admin</a>
+
+    <script>
+        // All players with their teams
+        const allPlayers = [
+            { name: 'Christopher Grandieri', team: 'Angels' },
+            { name: 'Gabe Pauciello', team: 'Angels' },
+            { name: 'Leo Forti', team: 'Angels' },
+            { name: 'William Cleborne', team: 'Angels' },
+            
+            { name: 'Colin Smith', team: 'Astros' },
+            { name: 'Logan Hyde', team: 'Astros' },
+            { name: 'Oliver Fenley', team: 'Astros' },
+            
+            { name: 'Brendan Logue', team: 'Dodgers' },
+            { name: 'Collin Pentz', team: 'Dodgers' },
+            { name: 'Daniel Quinn', team: 'Dodgers' },
+            { name: 'Luke Grabe', team: 'Dodgers' },
+            { name: 'Ryan Kawan', team: 'Dodgers' },
+            { name: 'Sawyer King', team: 'Dodgers' },
+            { name: 'Theodore Albertus', team: 'Dodgers' },
+            { name: 'William Pass', team: 'Dodgers' },
+            
+            { name: 'Dominic Gilroy', team: 'Giants' },
+            { name: 'John Breslin', team: 'Giants' },
+            { name: 'Joseph Basquill', team: 'Giants' },
+            
+            { name: 'David Jackson', team: 'Mariners' },
+            { name: 'Jacob Iyama', team: 'Mariners' },
+            { name: 'Joseph Termini', team: 'Mariners' },
+            { name: 'Maclen Long', team: 'Mariners' },
+            { name: 'Nate DeBellis', team: 'Mariners' },
+            { name: "William O'Brien", team: 'Mariners' },
+            
+            { name: 'Nicholas Reynolds', team: 'Orioles' },
+            
+            { name: 'Brody Miller', team: 'Padres' },
+            { name: 'Eric Zucker', team: 'Padres' },
+            { name: 'Jacob Dietzler', team: 'Padres' },
+            { name: 'Mason Denne', team: 'Padres' },
+            
+            { name: 'Cameron Schultz', team: 'RedSox' },
+            { name: 'Joseph Bachman', team: 'RedSox' },
+            { name: 'Mason Schaffer', team: 'RedSox' },
+            { name: 'Owen McCormick', team: 'RedSox' },
+            
+            { name: 'Luel Bezza', team: 'Tigers' },
+            { name: 'Ryan Raftovich', team: 'Tigers' },
+            { name: 'Sean Imszennik', team: 'Tigers' },
+            { name: 'Vincenzo Follo', team: 'Tigers' }
+        ];
+
+        let selectedPlayers = new Set();
+        let voterName = '';
+        const MAX_VOTES = 13;
+
+        // Initialize storage
+        if (!localStorage.getItem('votes')) {
+            localStorage.setItem('votes', JSON.stringify([]));
+        }
+
+        // Populate dropdown with all player names on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            const dropdown = document.getElementById('voterName');
+            
+            allPlayers.forEach(player => {
+                const option = document.createElement('option');
+                option.value = player.name;
+                option.textContent = player.name;
+                dropdown.appendChild(option);
+            });
+        });
+
+        // Enable start button when name is selected
+        document.getElementById('voterName').addEventListener('change', function() {
+            document.getElementById('startBtn').disabled = this.value === '';
+        });
+
+        // Remove the keypress listener since we're using a dropdown now
+
+        function startVoting() {
+            voterName = document.getElementById('voterName').value;
+            if (!voterName) return;
+
+            // Check duplicate
+            const votes = JSON.parse(localStorage.getItem('votes'));
+            if (votes.some(v => v.voter.toLowerCase() === voterName.toLowerCase())) {
+                alert('⚠️ ' + voterName + ' already voted!\n\nEach person votes once.');
+                // Reset dropdown
+                document.getElementById('voterName').value = '';
+                document.getElementById('startBtn').disabled = true;
+                return;
+            }
+
+            document.getElementById('voterNameDisplay').textContent = '👋 ' + voterName;
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('votingScreen').style.display = 'flex';
+
+            renderPlayers();
+            updateCounter();
+        }
+
+        function renderPlayers() {
+            const grid = document.getElementById('playersGrid');
+            grid.innerHTML = '';
+
+            allPlayers.forEach(player => {
+                const card = document.createElement('div');
+                card.className = 'player-card';
+                card.onclick = () => togglePlayer(player.name, card);
+
+                card.innerHTML = `
+                    <div class="player-name">${player.name}</div>
+                    <div class="player-team">${player.team}</div>
+                    <div class="checkmark">✓</div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function togglePlayer(playerName, card) {
+            if (selectedPlayers.has(playerName)) {
+                selectedPlayers.delete(playerName);
+                card.classList.remove('selected');
+            } else {
+                if (selectedPlayers.size >= MAX_VOTES) {
+                    alert('⚠️ Only 13 players!\n\nDeselect someone first.');
+                    return;
+                }
+                selectedPlayers.add(playerName);
+                card.classList.add('selected');
+            }
+
+            updateCounter();
+        }
+
+        function updateCounter() {
+            const count = selectedPlayers.size;
+            document.getElementById('voteCount').textContent = `${count}/13`;
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const submitMessage = document.getElementById('submitMessage');
+            
+            if (count === MAX_VOTES) {
+                submitBtn.disabled = false;
+                submitMessage.textContent = '✓ Ready to submit!';
+                submitMessage.className = 'submit-message ready';
+            } else {
+                submitBtn.disabled = true;
+                const remaining = MAX_VOTES - count;
+                submitMessage.textContent = `Pick ${remaining} more player${remaining !== 1 ? 's' : ''}`;
+                submitMessage.className = 'submit-message';
+            }
+        }
+
+        function submitVotes() {
+            if (selectedPlayers.size !== MAX_VOTES) return;
+
+            if (!confirm('Submit your votes?\n\n✓ ' + MAX_VOTES + ' players selected\n✓ Cannot change after submitting')) {
+                return;
+            }
+
+            // Save
+            const votes = JSON.parse(localStorage.getItem('votes'));
+            votes.push({
+                voter: voterName,
+                players: Array.from(selectedPlayers),
+                timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('votes', JSON.stringify(votes));
+
+            // Show thank you
+            document.getElementById('votingScreen').style.display = 'none';
+            document.getElementById('thankyouScreen').style.display = 'block';
+        }
+
+        function resetForNewVoter() {
+            selectedPlayers.clear();
+            voterName = '';
+            document.getElementById('voterName').value = '';
+            document.getElementById('startBtn').disabled = true;
+            
+            document.getElementById('thankyouScreen').style.display = 'none';
+            document.getElementById('welcomeScreen').style.display = 'block';
+        }
+
+        function viewResults(e) {
+            e.preventDefault();
+            const password = prompt('Enter admin password:');
+            if (password === 'allstar2026') {
+                showAdminResults();
+            } else if (password !== null) {
+                alert('❌ Incorrect password');
+            }
+        }
+
+        function showAdminResults() {
+            const votes = JSON.parse(localStorage.getItem('votes') || '[]');
+            
+            if (votes.length === 0) {
+                alert('No votes have been cast yet!');
+                return;
+            }
+
+            // Count votes for each player
+            const voteCount = {};
+            const playerTeams = {};
+            
+            // Build team mapping
+            allPlayers.forEach(player => {
+                playerTeams[player.name] = player.team;
+            });
+
+            votes.forEach(ballot => {
+                ballot.players.forEach(player => {
+                    voteCount[player] = (voteCount[player] || 0) + 1;
+                });
+            });
+
+            // Sort players by vote count
+            const sortedPlayers = Object.entries(voteCount)
+                .sort((a, b) => b[1] - a[1]);
+
+            // Build results display
+            let resultsText = '🏆 VOTING RESULTS 🏆\n\n';
+            resultsText += `Total Voters: ${votes.length}\n`;
+            resultsText += `Total Votes Cast: ${sortedPlayers.reduce((sum, [_, count]) => sum + count, 0)}\n\n`;
+            resultsText += '━━━━━━━━━━━━━━━━━━━━\n\n';
+            
+            sortedPlayers.forEach(([player, count], index) => {
+                const rank = index + 1;
+                const percentage = ((count / votes.length) * 100).toFixed(1);
+                const emoji = rank <= 13 ? '⭐' : '  ';
+                resultsText += `${emoji} #${rank}. ${player} (${playerTeams[player]})\n`;
+                resultsText += `   ${count} votes (${percentage}%)\n\n`;
+            });
+
+            resultsText += '━━━━━━━━━━━━━━━━━━━━\n\n';
+            resultsText += 'VOTERS:\n';
+            votes.forEach((ballot, i) => {
+                const date = new Date(ballot.timestamp);
+                resultsText += `${i + 1}. ${ballot.voter} - ${date.toLocaleString()}\n`;
+            });
+
+            // Show in alert
+            alert(resultsText);
+
+            if (confirm('Would you like to download the results as a text file?')) {
+                const blob = new Blob([resultsText], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `voting-results-${new Date().toISOString().split('T')[0]}.txt`;
+                a.click();
+            }
+        }
+    </script>
+</body>
+</html>
