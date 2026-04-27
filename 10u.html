@@ -525,8 +525,8 @@
         const MAX_VOTES = 12;
 
         // Initialize storage
-        if (!localStorage.getItem('votes')) {
-            localStorage.setItem('votes', JSON.stringify([]));
+        if (!localStorage.getItem('nell_votes_10u')) {
+            localStorage.setItem('nell_votes_10u', JSON.stringify([]));
         }
 
         // Populate dropdown with all player names on page load
@@ -553,7 +553,7 @@
             if (!voterName) return;
 
             // Check duplicate
-            const votes = JSON.parse(localStorage.getItem('votes'));
+            const votes = JSON.parse(localStorage.getItem('nell_votes_10u'));
             if (votes.some(v => v.voter.toLowerCase() === voterName.toLowerCase())) {
                 alert('⚠️ ' + voterName + ' already voted!\n\nEach person votes once.');
                 // Reset dropdown
@@ -632,13 +632,13 @@
             }
 
             // Save
-            const votes = JSON.parse(localStorage.getItem('votes'));
+            const votes = JSON.parse(localStorage.getItem('nell_votes_10u'));
             votes.push({
                 voter: voterName,
                 players: Array.from(selectedPlayers),
                 timestamp: new Date().toISOString()
             });
-            localStorage.setItem('votes', JSON.stringify(votes));
+            localStorage.setItem('nell_votes_10u', JSON.stringify(votes));
 
             // Show thank you
             document.getElementById('votingScreen').style.display = 'none';
@@ -666,7 +666,7 @@
         }
 
         function showAdminResults() {
-            const votes = JSON.parse(localStorage.getItem('votes') || '[]');
+            const votes = JSON.parse(localStorage.getItem('nell_votes_10u') || '[]');
             
             if (votes.length === 0) {
                 alert('No votes have been cast yet!');
